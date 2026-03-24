@@ -6,9 +6,6 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Initialise pico_sdk from installed location
-# (note this can come from environment, CMake cache etc)
-
 # == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
     set(USERHOME $ENV{USERPROFILE})
@@ -25,33 +22,53 @@ endif()
 # ====================================================================================
 set(PICO_BOARD pico2 CACHE STRING "Board type")
 
-# Pull in Raspberry Pi Pico SDK (must be before project)
+# Pull in Raspberry Pi Pico SDK 
 include(pico_sdk_import.cmake)
+
+
+
+
+
+
+# FreeRTOS 
+set(FREERTOS_KERNEL_PATH ${CMAKE_CURRENT_LIST_DIR}/FreeRTOS-Kernel)
+set(FREERTOS_PORT GCC_ARM_CM33_NTZ_NONSECURE CACHE STRING "FreeRTOS port")
+include(FreeRTOS_Kernel_import.cmake)
 
 project(pico2_freertos_test C CXX ASM)
 
-# Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-# Add executable. Default name is the project name, version 0.1
+# xEventGroupSetBitsFromISR()  xTimerPendFunctionCallFromISR() error  
+target_sources(FreeRTOS-Kernel PRIVATE
+        ${FREERTOS_KERNEL_PATH}/event_groups.c
+        ${FREERTOS_KERNEL_PATH}/timers.c
+        ${FREERTOS_KERNEL_PATH}/stream_buffer.c
+)
 
-add_executable(pico2_freertos_test pico2_freertos_test.c )
+
+
+
+
+
+add_executable(pico2_freertos_test
+        pico2_freertos_test.c
+)
 
 pico_set_program_name(pico2_freertos_test "pico2_freertos_test")
 pico_set_program_version(pico2_freertos_test "0.1")
 
-# Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(pico2_freertos_test 1)
 pico_enable_stdio_usb(pico2_freertos_test 0)
 
-# Add the standard library to the build
-target_link_libraries(pico2_freertos_test
-        pico_stdlib)
-
-# Add the standard include files to the build
 target_include_directories(pico2_freertos_test PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-pico_add_extra_outputs(pico2_freertos_test)
+target_link_libraries(pico2_freertos_test
+        pico_stdlib
+        FreeRTOS-Kernel
+        FreeRTOS-Kernel-Heap4
+)
 
+pico_add_extra_outputs(pico2_freertos_test)
