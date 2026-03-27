@@ -18,25 +18,30 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
 //configUSE_MALLOC_FAILED_HOOK
 void vApplicationMallocFailedHook(void)
 {
-    /* Replace with your own error handler if needed */
     for (;;);
 }
 
 
+
+typedef struct {
+    uint pin;
+    uint delay;
+} vBlinkTaskParams;
+
 //Blink task
 void vBlinkTask(void *pvParameters)
 {
-    (void) pvParameters;
+    vBlinkTaskParams *p =  (vBlinkTaskParams*)pvParameters;
 
-    gpio_init(PICO_DEFAULT_LED_PIN);
-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
+    gpio_init(p->pin);
+    gpio_set_dir(p->pin, GPIO_OUT);
 
     for (;;)
     {
-        gpio_put(PICO_DEFAULT_LED_PIN, true);
-        vTaskDelay(pdMS_TO_TICKS(300));
-        gpio_put(PICO_DEFAULT_LED_PIN, false);
-        vTaskDelay(pdMS_TO_TICKS(300));
+        gpio_put(p->pin, true);
+        vTaskDelay(pdMS_TO_TICKS(p->delay));
+        gpio_put(p->pin, false);
+        vTaskDelay(pdMS_TO_TICKS(p->delay));
     }
 }
 
@@ -55,8 +60,11 @@ void vHelloTask(void *pvParameters)
 int main()
 {
     stdio_init_all();
+    vBlinkTaskParams p1 = { 14, 300 };
+    vBlinkTaskParams p2 = { 17, 600 };
 
-    xTaskCreate(vBlinkTask, "Blink", 256, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(vBlinkTask, "Blink", 256, &p1, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(vBlinkTask, "Blink", 256, &p2, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(vHelloTask, "Hello", 256, NULL, tskIDLE_PRIORITY + 1, NULL);
 
     vTaskStartScheduler();  
