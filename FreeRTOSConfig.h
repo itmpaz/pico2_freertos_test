@@ -64,6 +64,8 @@
  * SMP — RP2350 is dual-core; the raspberrypi port is SMP-capable.
  * Set configNUMBER_OF_CORES 1 to run on a single core only.
  * --------------------------------------------------------------- */
+
+#if 1 
 #ifdef FREE_RTOS_KERNEL_SMP
 #define configNUMBER_OF_CORES                   2
 #define configNUM_CORES                         configNUMBER_OF_CORES
@@ -71,6 +73,7 @@
 #define configRUN_MULTIPLE_PRIORITIES           1
 #if configNUMBER_OF_CORES > 1
 #define configUSE_CORE_AFFINITY                 1
+#endif
 #endif
 #endif
 

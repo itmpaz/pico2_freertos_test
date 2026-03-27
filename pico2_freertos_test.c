@@ -23,49 +23,44 @@ void vApplicationMallocFailedHook(void)
 
 
 
+
 typedef struct {
-    uint pin;
+    char text[100];
     uint delay;
-} vBlinkTaskParams;
+} vHelloTaskParams;
 
-//Blink task
-void vBlinkTask(void *pvParameters)
-{
-    vBlinkTaskParams *p =  (vBlinkTaskParams*)pvParameters;
 
-    gpio_init(p->pin);
-    gpio_set_dir(p->pin, GPIO_OUT);
-
-    for (;;)
-    {
-        gpio_put(p->pin, true);
-        vTaskDelay(pdMS_TO_TICKS(p->delay));
-        gpio_put(p->pin, false);
-        vTaskDelay(pdMS_TO_TICKS(p->delay));
-    }
-}
 
 //Hello task
 void vHelloTask(void *pvParameters)
 {
-    (void) pvParameters;
+    vHelloTaskParams *p =  (vHelloTaskParams*)pvParameters;
 
     for (;;)
     {
-        printf("Hello from FreeRTOS on Pico 2!\n");
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        uint pos=0;
+        while(p->text[pos]!=0)
+        {
+            printf("%c",p->text[pos++]);
+            for(uint i=0;i<1000000;i++) ;
+            //vTaskDelay(100);
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(p->delay));
+        //for(uint i=0;i<p->delay*10000;i++) ;
+        
     }
 }
 
 int main()
 {
     stdio_init_all();
-    vBlinkTaskParams p1 = { 14, 300 };
-    vBlinkTaskParams p2 = { 17, 600 };
 
-    xTaskCreate(vBlinkTask, "Blink", 256, &p1, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(vBlinkTask, "Blink", 256, &p2, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(vHelloTask, "Hello", 256, NULL, tskIDLE_PRIORITY + 1, NULL);
+    vHelloTaskParams t1 = { "11111111111\n", 1000 };
+    vHelloTaskParams t2 = { "22222222222\n", 2000 };
+
+    xTaskCreate(vHelloTask, "Hello1", 256, &t1, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(vHelloTask, "Hello2", 256, &t2, tskIDLE_PRIORITY + 1, NULL);
 
     vTaskStartScheduler();  
 
