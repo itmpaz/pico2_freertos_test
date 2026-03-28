@@ -31,6 +31,8 @@ typedef struct {
 } vHelloTaskParams;
 
 
+
+//https://www.freertos.org/Documentation/02-Kernel/04-API-references/10-Semaphore-and-Mutexes/00-Semaphores
 SemaphoreHandle_t _xSemaphore;
 
 
