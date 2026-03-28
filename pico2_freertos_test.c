@@ -2,6 +2,8 @@
 #include "pico/stdlib.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
+#include <string.h>
 
 
 //Required hooks
@@ -23,6 +25,20 @@ void vApplicationMallocFailedHook(void)
 }
 
 
+
+
+// https://www.freertos.org/Documentation/02-Kernel/02-Kernel-features/02-Queues-mutexes-and-semaphores/01-Queues
+
+QueueHandle_t _queue;
+
+typedef struct 
+{
+    char text[50];
+
+
+} vSomeData;
+
+
 //Blink task
 void vBlinkTask(void *pvParameters)
 {
@@ -31,12 +47,15 @@ void vBlinkTask(void *pvParameters)
     gpio_init(PICO_DEFAULT_LED_PIN);
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
 
+    bool led_state= true;
     for (;;)
     {
-        gpio_put(PICO_DEFAULT_LED_PIN, true);
-        vTaskDelay(pdMS_TO_TICKS(300));
-        gpio_put(PICO_DEFAULT_LED_PIN, false);
-        vTaskDelay(pdMS_TO_TICKS(300));
+        gpio_put(PICO_DEFAULT_LED_PIN, led_state);
+        vSomeData data = { 0 };
+        strcpy(data.text, led_state ? "Led ON" : "Led OFF");
+        xQueueSend(_queue, &data, 0);
+        led_state = !led_state;
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
@@ -47,14 +66,20 @@ void vHelloTask(void *pvParameters)
 
     for (;;)
     {
-        printf("Hello from FreeRTOS on Pico 2!\n");
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        vSomeData data;
+        if(xQueueReceive(_queue, &data,  portMAX_DELAY) == pdPASS)
+        {
+            printf("%s\n",data.text);
+        }
+
     }
 }
 
 int main()
 {
     stdio_init_all();
+
+    _queue = xQueueCreate(1, sizeof(vSomeData));
 
     xTaskCreate(vBlinkTask, "Blink", 256, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(vHelloTask, "Hello", 256, NULL, tskIDLE_PRIORITY + 1, NULL);
