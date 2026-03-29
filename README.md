@@ -8,6 +8,12 @@ cp FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2350_ARM_NTZ/FreeRTOS_Kernel_import
 ```
 
 
+[Video](https://youtu.be/vbwfGcv84DM)
+
+[FreeRTOS](https://www.freertos.org/)
+
+[Github](https://github.com/raspberrypi/FreeRTOS-Kernel)
+
 ## Task priorites
 
 [Documentaion](https://www.freertos.org/Documentation/02-Kernel/02-Kernel-features/01-Tasks-and-co-routines/03-Task-priorities)
